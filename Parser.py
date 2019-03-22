@@ -53,14 +53,16 @@ class Paserser_class:
         self.imprime = imprime
         self.linesSizes = linesSizes 
         self.lineas = lineas
+        self.err = 0
 
 
     
     def ejecutar(self):
         AST = self.program()
-        if self.imprime:
+        if self.imprime and self.err == 0:
             AST.Tree_Node_Print(0)
-        return AST
+            return AST
+        return None
 
     #1.	program --> declaration-list 
     def program(self):
@@ -259,8 +261,21 @@ class Paserser_class:
             if child is not None:
                 AST.addChild(child)
             else:
+                save = self.pos
                 self.pos = posA
-                break
+                
+                tok = self.match(TokenType.RKEY)
+                if tok is not None:
+                    self.pos = posA
+                    return AST
+
+                if self.tokenTypes[self.pos] == TokenType.SEMICOLON or self.tokenTypes[self.pos] == TokenType.ID or self.tokenTypes[self.pos] == TokenType.LPAREN  or self.tokenTypes[self.pos] == TokenType.NUM or self.tokenTypes[self.pos] == TokenType.LKEY or self.tokenTypes[self.pos] == TokenType.IF or self.tokenTypes[self.pos] == TokenType.WHILE or self.tokenTypes[self.pos] == TokenType.RETURN:
+                    self.pos = posA
+                    return AST
+                else:
+                    self.pos = save
+                    self.error(False)
+        
         return AST
 
     #12. statement-list --> { statement }
@@ -272,8 +287,10 @@ class Paserser_class:
             if child is not None:
                 AST.addChild(child)
             else:
-                self.pos = posA
-                break
+                if self.tokenTypes[posA] == TokenType.RKEY:
+                    return AST
+                self.error(False)                
+                
         return AST
     
     #13. statement --> expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt
@@ -281,7 +298,6 @@ class Paserser_class:
         AST = Tree_Node("statement")
         posA = self.pos
         child = self.expression_stmt()
-
         if child is not None:
             AST.addChild(child)
             return AST
@@ -459,13 +475,12 @@ class Paserser_class:
             posA = self.pos
             child = self.var()
             if child is not None:
-                AST.addChild(child)
                 tok = self.match(TokenType.EQUALS)
                 if tok is not None: 
+                    AST.addChild(child)
                     AST.addChild(tok)
                 else:
                     self.pos = posA
-                    
                     break
             else:
                 self.pos = posA
@@ -488,6 +503,7 @@ class Paserser_class:
             posA = self.pos
             tok = self.match(TokenType.LBRACKET)
             if tok is not None:
+                AST.addChild(tok)
                 child = self.expression()
                 if child is not None:
                     AST.addChild(child)
@@ -719,7 +735,8 @@ class Paserser_class:
             return Tree_Node(self.tokens[self.pos-1])
         return None
 
-    def error(self):
+    def error(self, move = True):
+        self.err = 1
 
         errorLine = self.getErrorLine()
         print("Sintax error in line",errorLine,":")
@@ -731,7 +748,10 @@ class Paserser_class:
 
         for i in range(self.pos, len(self.tokens)):
             if self.tokenTypes[i] == TokenType.SEMICOLON or self.tokenTypes[i] == TokenType.ENDFILE or self.tokenTypes[i] == TokenType.LKEY or self.tokenTypes[i] == TokenType.RKEY:
-                self.pos = i+1
+                if move:
+                    self.pos = i+1
+                else:
+                    self.pos = i
                 break
 
     def getErrorLine(self):

@@ -1,7 +1,7 @@
 from globalTypes import *
 from Parser import *
 
-f = open('sample2.c‐', 'r')
+f = open('sample3.c‐', 'r')
 programa = f.read()     # lee todo el archivo a compilar
 progLong = len(programa)   # longitud original del programa
 programa = programa + '$'   # agregar un caracter $ que represente EOF
