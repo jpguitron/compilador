@@ -66,8 +66,6 @@ class Paserser_class:
 
     #1.	program --> declaration-list 
     def program(self):
-        #for token, tokenType in zip(self.tokens,self.tokenTypes):
-        #    print(token,tokenType)
         return self.declaration_list()
 
     #2.	declaration-list --> declaration {declaration} 
@@ -139,6 +137,9 @@ class Paserser_class:
                             if tok is not None:
                                 #AST.addChild(tok)
                                 return AST
+                            else:
+                                self.error(False)
+                                return AST
         return None
 
     #5.	type-specifier --> int | void
@@ -175,6 +176,13 @@ class Paserser_class:
                             if child is not None:
                                 AST.addChild(child)
                                 return AST
+    
+        self.error(False)
+        if self.tokenTypes[self.pos] == TokenType.LKEY:
+            child = self.compound_stmt()
+            if child is not None:
+                AST.addChild(child)
+                return AST
         return None
 
     #7.	params --> param-list | void
@@ -269,12 +277,12 @@ class Paserser_class:
                     self.pos = posA
                     return AST
 
-                if self.tokenTypes[self.pos] == TokenType.SEMICOLON or self.tokenTypes[self.pos] == TokenType.ID or self.tokenTypes[self.pos] == TokenType.LPAREN  or self.tokenTypes[self.pos] == TokenType.NUM or self.tokenTypes[self.pos] == TokenType.LKEY or self.tokenTypes[self.pos] == TokenType.IF or self.tokenTypes[self.pos] == TokenType.WHILE or self.tokenTypes[self.pos] == TokenType.RETURN:
+                if self.tokenTypes[self.pos] == TokenType.ID or self.tokenTypes[self.pos] == TokenType.LPAREN  or self.tokenTypes[self.pos] == TokenType.NUM or self.tokenTypes[self.pos] == TokenType.LKEY or self.tokenTypes[self.pos] == TokenType.IF or self.tokenTypes[self.pos] == TokenType.WHILE or self.tokenTypes[self.pos] == TokenType.RETURN:
                     self.pos = posA
                     return AST
                 else:
                     self.pos = save
-                    self.error(False)
+                    self.error(True)
         
         return AST
 
@@ -289,7 +297,8 @@ class Paserser_class:
             else:
                 if self.tokenTypes[posA] == TokenType.RKEY:
                     return AST
-                self.error(False)                
+                self.error(False)   
+           
                 
         return AST
     
@@ -696,14 +705,19 @@ class Paserser_class:
     #28. args --> arg-list | empty
     def args(self):
         AST = Tree_Node("args")
-        child = self.arg_list()
         posA = self.pos
+        tok = self.match(TokenType.RPAREN)
+        if tok is not None:
+            self.pos -= 1
+            return AST
 
+        child = self.arg_list()
         if child is not None:
             AST.addChild(child)
             return AST
+        else:
+            self.error(False, False)
 
-        self.pos = posA
         return AST
 
     #29. arg-list --> expression { , expression }
@@ -735,16 +749,17 @@ class Paserser_class:
             return Tree_Node(self.tokens[self.pos-1])
         return None
 
-    def error(self, move = True):
+    def error(self, move = True, pr = True):
         self.err = 1
 
-        errorLine = self.getErrorLine()
-        print("Sintax error in line",errorLine,":")
-        posicion = self.posiciones[self.pos]
+        if pr:
+            errorLine = self.getErrorLine()
+            print("Sintax error in line",errorLine,":")
+            posicion = self.posiciones[self.pos]
 
-        print(self.linesSizes[errorLine-1][0])
-        offset = posicion-self.linesSizes[errorLine-1][1]-errorLine+1
-        print(' ' * offset +"^")
+            print(self.linesSizes[errorLine-1][0])
+            offset = posicion-self.linesSizes[errorLine-1][1]-errorLine+1
+            print(' ' * offset +"^")
 
         for i in range(self.pos, len(self.tokens)):
             if self.tokenTypes[i] == TokenType.SEMICOLON or self.tokenTypes[i] == TokenType.ENDFILE or self.tokenTypes[i] == TokenType.LKEY or self.tokenTypes[i] == TokenType.RKEY:
