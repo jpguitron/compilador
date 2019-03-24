@@ -88,13 +88,11 @@ class Paserser_class:
         
     #3.	declaration --> var-declaration | fun-declaration
     def declaration(self):
-        AST = Tree_Node("declaration")
         posA = self.pos
         child = self.var_declaration()
 
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
         
         posMayor = self.pos
 
@@ -102,8 +100,7 @@ class Paserser_class:
 
         child = self.fun_declaration()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -114,28 +111,23 @@ class Paserser_class:
 
     #4.	var-declaration --> type-specifier ID [ [ NUM ] ] ;
     def var_declaration(self):
-        AST = Tree_Node("var_declaration")
-        AST.addChild(self.type_specifier())
+        AST = self.type_specifier()
         if AST is not None:
             tok = self.match(TokenType.ID)
             if tok is not None:
                 AST.addChild(tok)
                 tok = self.match(TokenType.SEMICOLON)
                 if tok is not None:
-                    #AST.addChild(tok)
                     return AST
                 tok = self.match(TokenType.LBRACKET)
                 if tok is not None:
-                    #AST.addChild(tok)
                     tok = self.match(TokenType.NUM)
                     if tok is not None:
                         AST.addChild(tok)
                         tok = self.match(TokenType.RBRACKET)
                         if tok is not None:
-                            #AST.addChild(tok)
                             tok = self.match(TokenType.SEMICOLON)
                             if tok is not None:
-                                #AST.addChild(tok)
                                 return AST
                             else:
                                 self.error(False)
@@ -165,13 +157,11 @@ class Paserser_class:
                 AST.addChild(tok)
                 tok = self.match(TokenType.LPAREN)
                 if tok is not None:
-                    #AST.addChild(tok)
                     child = self.params()
                     if child is not None:
                         AST.addChild(child)
                         tok = self.match(TokenType.RPAREN)
                         if tok is not None:
-                            #AST.addChild(tok)
                             child = self.compound_stmt()
                             if child is not None:
                                 AST.addChild(child)
@@ -212,7 +202,6 @@ class Paserser_class:
         while self.pos < self.lenE-1:
             tok = self.match(TokenType.COMA)
             if tok is not None:
-                #AST.addChild(tok)
                 child = self.param()
                 if child is not None:
                     AST.addChild(child)
@@ -224,10 +213,9 @@ class Paserser_class:
 
     #9.	param --> type-specifier ID [ [ ] ]
     def param(self):
-        AST = Tree_Node("param")
         child = self.type_specifier()
+        AST = child
         if child is not None:
-            AST.addChild(child)
             tok = self.match(TokenType.ID)
             if tok is not None: 
                 AST.addChild(tok)
@@ -248,7 +236,6 @@ class Paserser_class:
         AST = Tree_Node("compound_stmt")
         tok = self.match(TokenType.LKEY)
         if tok is not None: 
-            AST.addChild(tok)
             child = self.local_declarations()
             if child is not None:
                 AST.addChild(child)
@@ -257,7 +244,6 @@ class Paserser_class:
                     AST.addChild(child)
                     tok = self.match(TokenType.RKEY)
                     if tok is not None: 
-                        AST.addChild(tok)
                         return AST
         return None
     #11. local-declarations --> { var-declaration }
@@ -297,27 +283,24 @@ class Paserser_class:
             else:
                 if self.tokenTypes[posA] == TokenType.RKEY:
                     return AST
-                self.error(False)   
+                self.error(True)   
            
                 
         return AST
     
     #13. statement --> expression-stmt | compound-stmt | selection-stmt | iteration-stmt | return-stmt
     def statement(self):
-        AST = Tree_Node("statement")
         posA = self.pos
         child = self.expression_stmt()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
         
         posMayor = self.pos
         self.pos = posA
 
         child = self.compound_stmt()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -325,8 +308,7 @@ class Paserser_class:
         self.pos = posA
         child = self.selection_stmt()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -334,8 +316,7 @@ class Paserser_class:
         self.pos = posA
         child = self.iteration_stmt()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -343,8 +324,7 @@ class Paserser_class:
         self.pos = posA
         child = self.return_stmt()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -354,47 +334,28 @@ class Paserser_class:
         return None
     #14. expression-stmt --> [expression] ; 
     def expression_stmt(self):
-        AST = Tree_Node("expression_stmt")
-
-        posA = self.pos
         child = self.expression()
+        AST = child
         if child is not None: 
-            AST.addChild(child)
             tok = self.match(TokenType.SEMICOLON)
             if tok is not None: 
-                AST.addChild(tok)
                 return AST
-        
-        posMayor = self.pos
-        self.pos = posA
-
-        tok = self.match(TokenType.SEMICOLON)
-        if tok is not None: 
-            AST.addChild(tok)
-            return AST
-
-        if posMayor < self.pos:
-            posMayor = self.pos
-        
-        self.pos = posMayor
         
         return None
     
     #15. selection-stmt --> if ( expression ) statement [else statement]
     def selection_stmt(self):
-        AST = Tree_Node("selection_stmt")
+        
         tok = self.match(TokenType.IF)
+        AST = tok
         if tok is not None: 
-            AST.addChild(tok)
             tok = self.match(TokenType.LPAREN)
             if tok is not None: 
-                AST.addChild(tok)
                 child = self.expression()
                 if child is not None: 
                     AST.addChild(child)
                     tok = self.match(TokenType.RPAREN)
                     if tok is not None: 
-                        AST.addChild(tok)
                         child = self.statement()
                         if child is not None:
                             AST.addChild(child)
@@ -417,13 +378,11 @@ class Paserser_class:
             AST.addChild(tok)
             tok = self.match(TokenType.LPAREN)
             if tok is not None: 
-                AST.addChild(tok)
                 child = self.expression()
                 if child is not None: 
                     AST.addChild(child)
                     tok = self.match(TokenType.RPAREN)
                     if tok is not None: 
-                        AST.addChild(tok)
                         child = self.statement()
                         if child is not None:
                             AST.addChild(child)
@@ -432,11 +391,10 @@ class Paserser_class:
     
     #17. return-stmt --> return [ expression ];  
     def return_stmt (self):
-        AST = Tree_Node("return_stmt")
+
         tok = self.match(TokenType.RETURN)
-        if tok is not None:
-            AST.addChild(tok)
-        else:
+        AST = tok
+        if tok is None:
             return None
 
 
@@ -444,9 +402,9 @@ class Paserser_class:
         child = self.expression()
         if child is not None: 
             AST.addChild(child)
+            
             tok = self.match(TokenType.SEMICOLON)
             if tok is not None: 
-                AST.addChild(tok)
                 return AST
         
         posMayor = self.pos
@@ -454,7 +412,6 @@ class Paserser_class:
 
         tok = self.match(TokenType.SEMICOLON)
         if tok is not None: 
-            AST.addChild(tok)
             return AST
 
         if posMayor < self.pos:
@@ -465,29 +422,21 @@ class Paserser_class:
         return None   
 
 
-    #18. expression --> var = { var =} simple-expression 
+    #18. expression --> { var =} simple-expression 
     def expression(self):
-        AST = Tree_Node("expression")
+        AST = None
 
-        """child = self.var()
-        if child is not None:
-            AST.addChild(child)
-            tok = self.match(TokenType.EQUALS)
-            if tok is not None: 
-                AST.addChild(tok)
-            else:
-                return None
-        else:
-            return None"""
-        
         while self.pos < self.lenE-1:
             posA = self.pos
+
             child = self.var()
             if child is not None:
                 tok = self.match(TokenType.EQUALS)
                 if tok is not None: 
+
+                    if AST is None:
+                        AST = tok
                     AST.addChild(child)
-                    AST.addChild(tok)
                 else:
                     self.pos = posA
                     break
@@ -495,8 +444,10 @@ class Paserser_class:
                 self.pos = posA
                 break
 
+    
         child = self.simple_expression()
-        
+        if AST is None:
+            return child    
         if child is not None:
             AST.addChild(child)
             return AST
@@ -505,20 +456,17 @@ class Paserser_class:
 
     #19. var --> ID [ [ expression ] ]
     def var(self):
-        AST = Tree_Node("var")
         tok = self.match(TokenType.ID)
+        AST = tok
         if tok is not None: 
-            AST.addChild(tok)
             posA = self.pos
             tok = self.match(TokenType.LBRACKET)
             if tok is not None:
-                AST.addChild(tok)
                 child = self.expression()
                 if child is not None:
                     AST.addChild(child)
                     tok = self.match(TokenType.RBRACKET)
                     if tok is not None: 
-                        AST.addChild(tok)
                         return AST
             else:
                 self.pos = posA
@@ -528,18 +476,17 @@ class Paserser_class:
 
     #20. simple-expression --> additive-expression [ relop additive-expression ]
     def simple_expression(self):
-        AST = Tree_Node("simple_expression")
         child = self.additive_expression()
+        AST = child
         if child is not None: 
-            AST.addChild(child)
             posA = self.pos
-            child = self.relop()
-            if child is not None:
-                AST.addChild(child)
+            operator = self.relop()
+            if operator is not None:
+                operator.addChild(AST)
                 child = self.additive_expression()
                 if child is not None:
-                    AST.addChild(child)
-                    return AST
+                    operator.addChild(child)
+                    return operator
             else:
                 self.pos = posA
                 return AST
@@ -575,18 +522,24 @@ class Paserser_class:
 
     #22. additive-expression --> term { addop term }
     def additive_expression(self):
-        AST = Tree_Node("additive_expression")
-        
+        AST = None
+
         child = self.term()
-        if child is not None:
-            AST.addChild(child)
-        else:
+        if child is None:
             return None
         
         while self.pos < self.lenE-1:
-            child = self.addop()
-            if child is not None:
-                AST.addChild(child)
+            operator = self.addop()
+
+            if operator is not None:
+                if AST is None:
+                    AST = operator
+                    AST.addChild(child)
+                else:
+                    AST_Child = AST
+                    AST = operator
+                    AST.addChild(AST_Child)
+
                 child = self.term()
                 if child is not None:
                     AST.addChild(child)
@@ -594,6 +547,10 @@ class Paserser_class:
                     return None
             else:
                 break
+        
+        if AST is None:
+            return child
+
         return AST 
     #23. addop --> + | -
     def addop(self):
@@ -607,18 +564,22 @@ class Paserser_class:
 
     #24. term --> factor { mulop factor }
     def term(self):
-        AST = Tree_Node("term")
-        
+        AST = None
         child = self.factor()
-        if child is not None:
-            AST.addChild(child)
-        else:
+        if child is None:
             return None
         
         while self.pos < self.lenE-1:
-            child = self.mulop()
-            if child is not None:
-                AST.addChild(child)
+            operator = self.mulop()
+            if operator is not None:
+                if AST is None:
+                    AST = operator
+                    AST.addChild(child)
+                else:
+                    AST_Child = AST
+                    AST = operator
+                    AST.addChild(AST_Child)
+
                 child = self.factor()
                 if child is not None:
                     AST.addChild(child)
@@ -626,6 +587,10 @@ class Paserser_class:
                     return None
             else:
                 break
+
+        if AST is None:
+            AST = child
+            
         return AST 
     #25. mulop --> * | /
     def mulop(self):
@@ -639,26 +604,20 @@ class Paserser_class:
 
     #26. factor --> ( expression ) | var | call | NUM
     def factor(self):
-        AST = Tree_Node("factor")
-
         posA = self.pos
         tok = self.match(TokenType.LPAREN)
         if tok is not None:
-            AST.addChild(tok)
             child = self.expression()
             if child is not None:
-                AST.addChild(child)
                 tok = self.match(TokenType.RPAREN)
                 if tok is not None:
-                    AST.addChild(tok)
-                    return AST
+                    return child
         posMayor = self.pos
 
         self.pos = posA
         child = self.call()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -666,8 +625,7 @@ class Paserser_class:
         self.pos = posA
         child = self.var()
         if child is not None:
-            AST.addChild(child)
-            return AST
+            return child
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -676,8 +634,7 @@ class Paserser_class:
         self.pos = posA
         tok = self.match(TokenType.NUM)   
         if tok is not None:
-            AST.addChild(tok)
-            return AST
+            return tok
 
         if posMayor < self.pos:
             posMayor = self.pos
@@ -687,19 +644,16 @@ class Paserser_class:
 
     #27. call --> ID ( args )
     def call(self):
-        AST = Tree_Node("call")
         tok = self.match(TokenType.ID)
+        AST = tok
         if tok is not None:
-            AST.addChild(tok)
             tok = self.match(TokenType.LPAREN)
             if tok is not None:
-                AST.addChild(tok)
                 child = self.args()
                 if child is not None:
                     AST.addChild(child)
                     tok = self.match(TokenType.RPAREN)
                     if tok is not None:
-                        AST.addChild(tok)
                         return AST
 
     #28. args --> arg-list | empty
@@ -732,7 +686,6 @@ class Paserser_class:
         while self.pos < self.lenE-1:
             tok = self.match(TokenType.COMA)
             if tok is not None:
-                #AST.addChild(tok)
                 child = self.expression()
                 if child is not None:
                     AST.addChild(child)

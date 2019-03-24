@@ -3,9 +3,22 @@ de Euclides para calcular mod. */
 
 int gdc (int u, int v)
 {
-    if ( v == 0) return u;
-    else return gdc(v,u-u/v*v);
+    if ( v == 0)
+    {
+        if ( v == 0)
+        {
+        }
+        else
+        {
+            if ( v != 0)
+            {
+
+            }
+        }
+    }
+    else return gdc(v,5-u/v*v/v);
     /* u-u/v*v == u mod v */
+    a = a = a = 1;
 }
 
 void main(void)
