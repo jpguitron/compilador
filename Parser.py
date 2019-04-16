@@ -61,6 +61,7 @@ class Paserser_class:
         AST = self.program()
         if self.imprime and self.err == 0:
             AST.Tree_Node_Print(0)
+        if self.err == 0:
             return AST
         return None
 
@@ -121,6 +122,7 @@ class Paserser_class:
                     return AST
                 tok = self.match(TokenType.LBRACKET)
                 if tok is not None:
+                    AST.addChild(Tree_Node("arr"))
                     tok = self.match(TokenType.NUM)
                     if tok is not None:
                         AST.addChild(tok)
@@ -155,6 +157,7 @@ class Paserser_class:
             tok = self.match(TokenType.ID)
             if tok is not None:
                 AST.addChild(tok)
+                AST.addChild(Tree_Node("args"))
                 tok = self.match(TokenType.LPAREN)
                 if tok is not None:
                     child = self.params()
@@ -223,10 +226,10 @@ class Paserser_class:
                 if tok is None:
                     return AST
                 else:
-                    AST.addChild(tok)
+                    #AST.addChild(tok)
                     tok = self.match(TokenType.RBRACKET)
                     if tok is not None:
-                        AST.addChild(tok)
+                        AST.addChild(Tree_Node("arr"))
                         return AST
 
         return None

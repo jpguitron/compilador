@@ -1,11 +1,12 @@
 /* Un programa para realizar ordenación por
     selección en un arreglo de 10 elementos. */
 
-/*int x[10];
+int x[10];
+
 int minloc (int a[], int low, int high)
 {
     int i; int x; int k;
-    k = low = high;
+    k = low;
     x = a[low];
     i = low + 1;
     while( i < high)
@@ -19,29 +20,31 @@ int minloc (int a[], int low, int high)
     }
     return k;
 }
-*/
-int perro(void)
-{
 
-}
-int sort(int a,int b,int c)
+void sort( int a[], int low, int high)
 {
+    int i; int k;
+    i = low;
 
-    return b;
+    while(i < high - 1)
+    {
+        int t;
+        k = minloc(a,i,high);
+        t = a[k];
+        a[k] = a[i];
+        a[i] = t;
+        i = i + 1;
+    }
 }
-int x[10];
+
 void main(void)
 {
     int i;
     i = 0;
-    
-    i = 1*5<1;
-
     while(i<10)
     {
         x[i] = input();
         i = i + 1;
-        
     }
     sort(x,0,10);
     i = 0;
@@ -49,7 +52,5 @@ void main(void)
     {
         output(x[i]);
         i = i + 1;
-        x[i] = perro();
-    }   
-    
+    }
 }
