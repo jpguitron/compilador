@@ -34,7 +34,8 @@ class Table_Scope:
 def semantica(AST, imprime = True):
     if AST != None:
         tabl = tabla(AST,imprime)
-    return 
+        return tabl
+    return None
 
 #remove unncesary scopes
 def clean_table(table):
@@ -59,8 +60,10 @@ def tabla(tree, imprime = True):
 
     clean_table(tabla)
 
-    tabla.printTable(0)
-    #verify_types(tree,tabla)
+    if imprime and not error:
+        tabla.printTable(0)
+    if error:
+        return None
 
     return tabla
 
@@ -304,8 +307,6 @@ def check_in_table_operators(root_table,table, var):
         trigger_error(str(var.root)+ " no ha sido declarado")
 
     return False
-
-
 
 def trigger_error(err):
     global error
