@@ -18,11 +18,12 @@ int minloc (int a[], int low, int high)
         i = i + 1;
     }
     return k;
-}
-*/
+}*/
+
 int perro(void)
 {
-
+    int a;
+    return a;
 }
 int sort(int a,int b,int c)
 {
@@ -30,11 +31,18 @@ int sort(int a,int b,int c)
     return b;
 }
 int x[10];
+int z[10];
 void main(void)
 {
     int i;
-    i = 0;
-    
+    int a;
+    int b;
+    int m;
+
+    n = prro();
+    a = n;
+    b = a;
+    i = x[z[1]];
     i = 1*5<1;
 
     while(i<10)
@@ -43,6 +51,7 @@ void main(void)
         i = i + 1;
         
     }
+    a = m;
     sort(x,0,10);
     i = 0;
     while(i < 10)

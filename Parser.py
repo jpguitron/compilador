@@ -122,7 +122,7 @@ class Paserser_class:
                     return AST
                 tok = self.match(TokenType.LBRACKET)
                 if tok is not None:
-                    AST.addChild(Tree_Node("arr"))
+                    AST.addChild(Tree_Node("arr_statement"))
                     tok = self.match(TokenType.NUM)
                     if tok is not None:
                         AST.addChild(tok)
@@ -157,7 +157,7 @@ class Paserser_class:
             tok = self.match(TokenType.ID)
             if tok is not None:
                 AST.addChild(tok)
-                AST.addChild(Tree_Node("args"))
+                AST.addChild(Tree_Node("args_statement"))
                 tok = self.match(TokenType.LPAREN)
                 if tok is not None:
                     child = self.params()
@@ -229,7 +229,7 @@ class Paserser_class:
                     #AST.addChild(tok)
                     tok = self.match(TokenType.RBRACKET)
                     if tok is not None:
-                        AST.addChild(Tree_Node("arr"))
+                        AST.addChild(Tree_Node("arr_statement"))
                         return AST
 
         return None
@@ -661,7 +661,7 @@ class Paserser_class:
 
     #28. args --> arg-list | empty
     def args(self):
-        AST = Tree_Node("args")
+        AST = Tree_Node("args_statement")
         posA = self.pos
         tok = self.match(TokenType.RPAREN)
         if tok is not None:
