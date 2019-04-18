@@ -375,10 +375,11 @@ class Paserser_class:
 
     #16. iteration-stmt --> while ( expression ) statement
     def iteration_stmt(self):
-        AST = Tree_Node("iteration_stmt")
+        #AST = Tree_Node("iteration_stmt")
         tok = self.match(TokenType.WHILE)
         if tok is not None: 
-            AST.addChild(tok)
+            AST = tok
+            #AST.addChild(tok)
             tok = self.match(TokenType.LPAREN)
             if tok is not None: 
                 child = self.expression()

@@ -87,7 +87,7 @@ def verify_return(table):
 #Check that the last child of the scope 0 is a main function
 def verify_main_position(table):
     if table.children[len(table.children)-1][0] != "main" or table.children[len(table.children)-1][2] != "args_statement":
-        trigger_error("La función main debe ser la ultima declarada en el Scope 0")
+        trigger_error("La función main debe ser la última declarada en el Scope 0")
 
 
     
@@ -110,7 +110,7 @@ def generateTable(table,tree,lvl,function_added):
     if tree.root == "void" and len(tree.children) > 0:
         void_tuple= []
         void_tuple.append(tree.children[0].root)
-        trigger_error("void no es valido para declarar una variable "+void_tuple[0])
+        trigger_error("void no es válido para declarar una variable "+void_tuple[0])
         table.addChild(void_tuple)
 
     #If a integer declaration is found
@@ -180,7 +180,7 @@ def generateTable(table,tree,lvl,function_added):
 def verifyDeclaration(scope, variable_name):
     for child in scope.children:
         if child[0] == variable_name:
-            trigger_error(variable_name+ " ya habia sido declarada en el scope "+scope.scope)
+            trigger_error(variable_name+ " ya había sido declarada en el scope "+scope.scope)
             return False
 
     return True
@@ -208,7 +208,7 @@ def verify_types(node,table):
                 if valid:
                     params_on_function = get_function_n_params(table, node.root)
                     if params_on_function != count:
-                        trigger_error("Se otubieron "+str(count)+" de "+str(params_on_function)+" parametros al llamar la función " + node.root)
+                        trigger_error("Se obtuvieron "+str(count)+" de "+str(params_on_function)+" parámetros al llamar la función " + node.root)
     #For verifying that a function void doesn't have a return
     elif node.root == "return":
         for nod in table.children:
@@ -219,7 +219,11 @@ def verify_types(node,table):
                     if check_in_table(table,table,node.children[0].root):
                         table.addChild([node.root,node.children[0].root])
     
-    
+    if "while" == node.root or "if" == node.root:
+        if node.children[0].root not in compare_types:
+        #verify_equals(node.children[0],table)
+            check_in_table_operators(table, table, node.children[0])
+            #check_in_table_operators(node.children[0],table)
     if not '_' in str(node.root):
         if node.root not in reservadas and node.root not in compare_types:
             if not represents_int(node.root):
@@ -306,10 +310,11 @@ def check_in_table_operators(root_table,table, var):
     #if not table:
     #    return False
     for child in table.children:
+
         #is child 0 because of the structure of the table, all names are on de space 0
         if child[0] == var.root:
             if child[1] != "int":
-                trigger_error("La función "+child[0]+" no regresa ningun parametro")
+                trigger_error("La función "+child[0]+" no regresa ningún parámetro")
                 return False
             else:
                 if len(var.children) != 0:
@@ -318,21 +323,22 @@ def check_in_table_operators(root_table,table, var):
                         if len(child) == 2 and var.children[0].root == "args_statement":
                             trigger_error(var.root+" no es una función")
                             return False
+                        else:
+                            if represents_int(var.children[0].root):
+                                if int(child[3]) > int(var.children[0].root):
+                                    return True
+                                else:
+                                    trigger_error("Índice fuera de rango para la variable "+var.root)
+                                    return True
+
                     elif child[2] == var.children[0].root:
                         return True
-                    else:
-                        if represents_int(var.children[0].root):
-                            if int(child[3]) > int(var.children[0].root):
-                                return True
-                            else:
-                                trigger_error("Index out of bounds ")
-                                return True
                         
                         if check_in_table_operators(root_table,root_table,var.children[0]):
                             return True
                         
 
-                        trigger_error("Se esparaba recibir argumentos para "+child[0]+" en el scope "+table.scope)
+                        trigger_error("Se esperaba recibir argumentos para "+child[0]+" en el scope "+table.scope)
                         return False
 
             return True
@@ -350,6 +356,6 @@ def check_in_table_operators(root_table,table, var):
 def trigger_error(err):
     global error
     error = True
-    print("ERROR:")
-    print("\t"+err)
+    print("Semantic error:")
+    print(err)
     
