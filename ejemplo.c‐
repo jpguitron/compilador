@@ -1,0 +1,13 @@
+void main(void)
+{
+    int a;
+    int b;
+    int c;
+
+    a = 1+2;
+    c = b = 5+5;
+
+    output(a);
+    output(b);
+    output(c);
+}
