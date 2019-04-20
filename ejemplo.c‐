@@ -1,14 +1,89 @@
-void main(void)
+int perro(int a){ return a+a+a+a+a;} 
+
+int func(int a[]) {return a[1];}
+
+void mainp(void)
+{
+    int a[10];
+    func(a);
+    a[1] = a[func(a)];
+}
+
+int x[10];
+int lol(void){return 5;}
+int minloc (int a[], int low, int high)
+{
+    int i; int x; int k;
+    k = low;
+    x = a[low];
+    i = low + 1;
+    while( i < high)
+    {
+        if ( a[i] < x)
+        {
+            x = a[i];
+            k = i;
+        }
+        i = i + 1;
+    }
+    return k;
+}
+
+void sort( int a[], int low, int high)
+{
+    int i; int k;
+    i = low;
+    
+    while(i < high - 1)
+    {
+        int t;
+        k = minloc(a,i,high);
+        t = a[k];
+        a[k] = a[i];
+        a[i] = t;
+        i = i + 1;
+    }
+}
+
+
+int gdc (int u, int v)
 {
     int a;
-    int b;
-    int c;
+    if ( v == 0)
+    {
+        if ( v == 0)
+        {
+        }
+        else
+        {
+            if ( v != 0)
+            {
 
-    a = 1+2;
-    b = 9/3*((4-1)-4);
-    c = b;
+            }
+        }
+    }
+    else return gdc(v,5-u/v*v/v);
+    /* u-u/v*v == u mod v */
+    a = a = a = 1;
+}
 
-    output(a);
-    output(b);
-    output(c);
+void main(void)
+{
+    int i;
+    int a;
+    a = a = a = lol();
+    i = 0;
+
+    while(i<10)
+    {
+        x[i] = input();
+        i = i + 1;
+    }
+    sort(x,0,10);
+    i = 0;
+    while(i < 10)
+    {
+        output(x[i]);
+        i = i + 1;
+    }
 }

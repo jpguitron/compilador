@@ -12,4 +12,4 @@ posicion = 0       # posición del caracter actual del string
 globales(programa, posicion, progLong)
 AST = parser(True)
 semantica(AST, True)
-codeGen(AST, "file.s")
+#codeGen(AST, "file.s")

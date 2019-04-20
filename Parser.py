@@ -364,10 +364,11 @@ class Paserser_class:
                             AST.addChild(child)
                             tok = self.match(TokenType.ELSE)
                             if tok is not None:
-                                AST.addChild(tok)
+                                #AST.addChild(tok)
                                 child = self.statement()
                                 if child is not None:
-                                    AST.addChild(child)
+                                    tok.addChild(child)
+                                    AST.addChild(tok)
                                     return AST
                             else:
                                 return AST
