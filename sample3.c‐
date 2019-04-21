@@ -1,16 +1,8 @@
-int perro(int a){ return a+a+a+a+a;} 
-
-int func(int a[]) {return a[1];}
-
-void mainp(void)
-{
-    int a[10];
-    a[1] = func(a);
-    a[1] = a[func(a)];
-}
+/* Un programa para realizar ordenación por
+    selección en un arreglo de 10 elementos. */
 
 int x[10];
-int lol(void){return 5;}
+
 int minloc (int a[], int low, int high)
 {
     int i; int x; int k;
@@ -33,7 +25,7 @@ void sort( int a[], int low, int high)
 {
     int i; int k;
     i = low;
-    
+
     while(i < high - 1)
     {
         int t;
@@ -45,35 +37,10 @@ void sort( int a[], int low, int high)
     }
 }
 
-
-int gdc (int u, int v)
-{
-    int a;
-    if ( v == 0)
-    {
-        if ( v == 0)
-        {
-        }
-        else
-        {
-            if ( v != 0)
-            {
-
-            }
-        }
-    }
-    else return gdc(v,5-u/v*v/v);
-    /* u-u/v*v == u mod v */
-    a = a = a = 1;
-}
-
 void main(void)
 {
     int i;
-    int a;
-    a = a = a = lol();
     i = 0;
-
     while(i<10)
     {
         x[i] = input();

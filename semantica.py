@@ -252,14 +252,17 @@ def verify_types(node,table):
                     if nod[1]=="void":
                         trigger_error("No debe haber un return en una función void ("+nod[0]+")")
                     else:
-                        if check_in_table(table,table,node.children[0].root):
+                        if len(node.children) == 0:
+                            trigger_error("falta parametro en return")
+                            break
+                        elif  check_in_table(table,table,node.children[0].root):
                             c = getChild(table,node.children[0].root)
                             if len(c)>=3 and c[2]=='arr_statement' and len(node.children[0].children) !=1:
                                 trigger_error("Indice requerido para el arreglo "+c[0]+" en el return de la función")
                             table.addChild([node.root,node.children[0].root])
                             break
 
-                        if represents_int(node.children[0].root) or node.children[0].root in compare_types:
+                        elif represents_int(node.children[0].root) or node.children[0].root in compare_types:
                             table.addChild([node.root,node.children[0].root])
                             break                            
             if not founded:
