@@ -213,7 +213,8 @@ def verify_types(node,table):
     #For verifying the functions
     elif len(node.children)> 0 and node.children[0].root == "args_statement":
         
-        if check_in_table(table,table, node.root):
+        ch = getChild(table,node.root)
+        if check_in_table(table,table, node.root) and ch and ch[2]=="args_statement":
             #if len(node.children[0].children) == 1 and node.children[0].children[0].root == "arg_list":
             valid = True
             count = 0
@@ -240,6 +241,13 @@ def verify_types(node,table):
                 actual_child = getChild(table,node.root)
                 if len(actual_child)!= 2 and variable_types != params_on_function and actual_child[2] != "arr_statement":
                     trigger_error("Se esperaban los parámetros "+str(params_on_function)+" y se encontraron "+str(variable_types)+" al llamar la función " + node.root)
+        else:
+            if not ch:
+                trigger_error("La función "+node.root+" no ha sido declarada")
+            
+            elif ch[2]!="args_statement":
+                trigger_error("La función "+node.root+" no ha sido declarada")
+
 
     #For verifying that a function void doesn't have a return
     elif node.root == "return":
@@ -271,6 +279,10 @@ def verify_types(node,table):
     elif "while" == node.root or "if" == node.root:
         if node.children[0].root not in compare_types:
             check_in_table_operators(table, table, node.children[0])
+            ch = getChild(table,node.children[0].root)
+            if not represents_int(node.children[0].root) and len(ch)>=3 and ch[2] == "arr_statement" and len(node.children[0].children)==0:
+                trigger_error("Indice requerido para el arreglo "+str(ch[0]))
+        
             
 
     elif not '_' in str(node.root):
@@ -315,6 +327,7 @@ def get_function_n_params(table, func):
 def verify_equals(tree,table):
 
     valid2 = False
+
     for node in tree.children:
         
         valid = True
@@ -333,7 +346,11 @@ def verify_equals(tree,table):
             continue
         
         elif check_in_table_operators(table, table, node):
-            valid2 =  True
+            ch = getChild(table,node.root)
+            if len(ch)>=3 and ch[2] == "arr_statement" and len(node.children)==0:
+                trigger_error("Indice requerido para el arreglo "+str(ch[0]))
+            else:
+                valid2 =  True
             continue
 
     return True
@@ -349,14 +366,18 @@ def represents_int(num):
 #check if a function was declared in the table in the current or higher scope
 def check_in_table(root_table,table, func, child=None):
     
+    ch = getChild(table,func)
+    if child and ch and len(ch)>=3 and (ch[2]=="arr_statement" or ch[2]=="args_statement"):
+        if ch[2]=="args_statement" and child[0].root!= "args_statement":
+            trigger_error(func+" no es un arreglo")
+
     if child:
         for chil in table.children:
             if chil[0] == func and len(chil)>=3 and chil[2]=="arr_statement" and not represents_int(child[0].root) and len(child[0].children)!=1:
                 c = getChild(table, child[0].root)
                 if c and len(c)>=3 and c[2]=="arr_statement":
                     trigger_error("Indice requerido para el arreglo "+str(child[0].root))
-
-    ch=child
+        
     if child:
         for child in table.children:
             if child[0] == func and len(child)>=3:
@@ -405,25 +426,26 @@ def check_in_table_operators(root_table,table, var,access=True):
                             trigger_error(var.root+" no es una función")
                             return False
                         else:
-                            if represents_int(var.children[0].root):
-                                if len(child) == 2:
-                                    trigger_error(child[0]+" No es un arreglo")
-                                    return True
-                                if len(child)>3 and child[3] == "void":
-                                    trigger_error(child[0]+" no es un arreglo")
-                                    return True
-                                if len(child)>3:
-                                    if  int(child[3]) > int(var.children[0].root):
-                                        return True
-                                    else:
-                                        trigger_error("Índice fuera de rango para la variable "+var.root)
-                                        return True
-                            elif var.children[0].root == "args_statement":
+
+                            if var.children[0].root == "args_statement":
                                 actual_child = getChild(table,var.root)
                                 if actual_child and actual_child[2] == "args_statement":
                                     return True
                                 else:
                                     trigger_error(var.root+" no es una función")
+
+                            elif len(child) == 2:
+                                trigger_error(child[0]+" No es un arreglo")
+                                return True
+                            elif len(child)>3 and child[3] == "void":
+                                trigger_error(child[0]+" no es un arreglo2")
+                                return True
+                            elif len(child)>3 and represents_int(var.children[0].root) and represents_int(child[3]):
+                                if  int(child[3]) > int(var.children[0].root):
+                                    return True
+                                else:
+                                    trigger_error("Índice fuera de rango para la variable "+var.root)
+                                    return True
 
                             elif var.children[0].root == "arr_statement":
                                 actual_child = getChild(table,var.root)
