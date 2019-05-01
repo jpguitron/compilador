@@ -9,12 +9,6 @@ perr:
 move $fp $sp
 sw $ra 0($sp)
 addiu $sp $sp -4
-lw $a0 20($sp)
-li $v0 1
-syscall
-li $v0 4
-la $a0 newline
-syscall
 lw $t1 16($sp)
 lw $t3 4($t1)
 li $t0 0
@@ -276,6 +270,95 @@ addiu $a0 $a0 12
 sw $a0 0($sp)
 addiu $sp $sp -4
 jal perro
+li $v0 1
+syscall
+li $v0 4
+la $a0 newline
+syscall
+lw $t3 12($sp)
+li $t0 0
+blt $t0 $zero Outbounds
+bge $t0 $t3 Outbounds
+move $t1 $sp
+addiu $t1 $t1 8
+li $t2 4
+mul $t0 $t0 $t2
+sub $t1 $t1 $t0
+lw $a0 0($t1)
+li $v0 1
+syscall
+li $v0 4
+la $a0 newline
+syscall
+sw $fp 0($sp)
+addiu $sp $sp -4
+move $a0 $sp
+addiu $a0 $a0 12
+sw $a0 0($sp)
+addiu $sp $sp -4
+jal perro
+li $v0 1
+syscall
+li $v0 4
+la $a0 newline
+syscall
+lw $t3 12($sp)
+li $t0 0
+blt $t0 $zero Outbounds
+bge $t0 $t3 Outbounds
+move $t1 $sp
+addiu $t1 $t1 8
+li $t2 4
+mul $t0 $t0 $t2
+sub $t1 $t1 $t0
+lw $a0 0($t1)
+sw $a0, 0($sp)
+addiu $sp $sp -4
+li $a0 100
+sw $a0, 0($sp)
+addiu $sp $sp -4
+lw $t1, 4($sp)
+lw $a0, 8($sp)
+add $a0 $a0 $t1
+addiu $sp $sp 8
+sw $a0, 0($sp)
+addiu $sp $sp -4
+sw $fp 0($sp)
+addiu $sp $sp -4
+move $a0 $sp
+addiu $a0 $a0 16
+sw $a0 0($sp)
+addiu $sp $sp -4
+jal perro
+sw $a0, 0($sp)
+addiu $sp $sp -4
+lw $t1, 4($sp)
+lw $a0, 8($sp)
+add $a0 $a0 $t1
+addiu $sp $sp 8
+sw $a0, 0($sp)
+addiu $sp $sp -4
+addiu $sp $sp 4
+lw $t3 12($sp)
+li $t0 0
+blt $t0 $zero Outbounds
+bge $t0 $t3 Outbounds
+move $t1 $sp
+addiu $t1 $t1 8
+li $t2 4
+mul $t0 $t0 $t2
+sub $t1 $t1 $t0
+sw $a0 0($t1)
+lw $t3 12($sp)
+li $t0 0
+blt $t0 $zero Outbounds
+bge $t0 $t3 Outbounds
+move $t1 $sp
+addiu $t1 $t1 8
+li $t2 4
+mul $t0 $t0 $t2
+sub $t1 $t1 $t0
+lw $a0 0($t1)
 li $v0 1
 syscall
 li $v0 4

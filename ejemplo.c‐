@@ -1,6 +1,5 @@
 int perr(int a[], int p[],int z[], int j)
 {
-    output(j);
     z[0] = z[0]+32;
     return a[0]+p[0]+z[0];
 }
@@ -28,6 +27,11 @@ void main(void)
     p[0] = 1000;
     output(perro(p));
     p[0] = p[0] + 79;
-
     output(perro(p));
+    
+    output(p[0]);
+    output(perro(p));
+
+    p[0] = p[0] +100+ perro(p);
+    output(p[0]);
 }
