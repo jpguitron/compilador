@@ -1,26 +1,33 @@
-int can (int a[], int p[])
+int perr(int a[], int p[],int z[], int j)
 {
-    output(a[0]);
-    output(p[0]);
-    p[0] = a[0]+p[0];
-    return p[0];
+    output(j);
+    z[0] = z[0]+32;
+    return a[0]+p[0]+z[0];
 }
 
-void perro(int a[],int b)
+int can (int a[], int p[])
 {
-    /*a[0]=79;
-    a[10]=79;*/
-    a[0]=69;
+    int z[2];
+    z[0]=32;
+    return perr(a,p,z,z[0]+10);
+}
+
+int perro(int a[])
+{
+    int p[2];
+    p[0] = 100;
+    return can(a,p);
+    output(p[0]+144);/*Esto no lo debe imprimir*/
+
 }
 void main(void)
 {
     int k;
-    int p[3];
+    int p[2];
 
-    p[0] =1000;
-    perro(p,100);
+    p[0] = 1000;
+    output(perro(p));
+    p[0] = p[0] + 79;
 
-    p[0] = can(p,p);
-    output(p[0]+100);
-    output(p[0]);
+    output(perro(p));
 }

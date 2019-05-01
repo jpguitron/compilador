@@ -185,6 +185,11 @@ def generateCode(tree,generator):
                     else:
                         offset_local = str(generator.offset-generator.variables_directory[i.root])
                         generator.write("lw $a0 "+offset_local+("($sp)"))
+                
+                elif i.root in compare_types:
+                    generateCode(i,generator)
+                    generator.write("addiu $sp $sp 4")
+                    generator.offset -= 4
 
                 else:
                     offset_local = str(generator.offset-generator.variables_directory[i.root])
