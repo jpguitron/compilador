@@ -19,6 +19,14 @@ int perro(int a[])
     output(p[0]+144);/*Esto no lo debe imprimir*/
 
 }
+int jo(void)
+{
+    return 7;
+}
+void per(int a)
+{
+    output(a);
+}
 void main(void)
 {
     int k;
@@ -28,10 +36,11 @@ void main(void)
     output(perro(p));
     p[0] = p[0] + 79;
     output(perro(p));
-    
+
     output(p[0]);
     output(perro(p));
 
     p[0] = p[0] +100+ perro(p);
     output(p[0]);
+    per(jo());
 }

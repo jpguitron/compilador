@@ -195,6 +195,31 @@ lw $ra 4($sp)
 addiu $sp $sp 12
 lw $fp 0($sp)
 jr $ra
+jo:
+move $fp $sp
+sw $ra 0($sp)
+addiu $sp $sp -4
+li $a0 7
+addiu $sp $sp 0
+lw $ra 4($sp)
+addiu $sp $sp 8
+lw $fp 0($sp)
+jr $ra
+per:
+move $fp $sp
+sw $ra 0($sp)
+addiu $sp $sp -4
+lw $a0 8($sp)
+li $v0 1
+syscall
+li $v0 4
+la $a0 newline
+syscall
+addiu $sp $sp 0
+lw $ra 4($sp)
+addiu $sp $sp 12
+lw $fp 0($sp)
+jr $ra
 main:
 li $a0 0
 sw $a0 0($sp)
@@ -364,6 +389,14 @@ syscall
 li $v0 4
 la $a0 newline
 syscall
+sw $fp 0($sp)
+addiu $sp $sp -4
+sw $fp 0($sp)
+addiu $sp $sp -4
+jal jo
+sw $a0 0($sp)
+addiu $sp $sp -4
+jal per
 End:
 li $v0, 10
 syscall

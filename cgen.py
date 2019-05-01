@@ -171,6 +171,10 @@ def generateCode(tree,generator):
                 if represents_int(i.root):
                     generator.write("li $a0 "+str(i.root))
                 
+                #function founded
+                elif len(i.children) == 1 and i.children[0].root == "args_statement":
+                    generateCode(i,generator)
+
                 #variable founded
                 elif len(i.children) == 1:
                     verify_array_index(i,generator,"load")
