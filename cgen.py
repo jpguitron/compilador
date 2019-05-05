@@ -10,6 +10,10 @@ import copy# poner en la documentacion que se esta utilizando
 
 compare_types = ["+","-","*","/","<","<=",">",">=","==","!=","="]
 word_size = 4
+
+ifs = 0
+whiles = 0
+
 class Code_generator:
 
     #Get the name for the file
@@ -150,9 +154,146 @@ def generateCode(tree,generator):
                 offset_local = str(generator.offset-generator.variables_directory[tree.children[0].root])
                 generator.write("lw $a0 "+str(offset_local)+"($sp)")
 
+        generator.write("move $sp $fp")
+        generator.write("addiu $sp $sp -4")
+
+        #generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
+        generator.write("lw $ra 4($sp)")
+
+        generator.write("addiu $sp $sp "+str((generator.memory_counter_declarations*4)+8))
+        generator.write("lw $fp 0($sp)")
+        generator.write("jr $ra")
+
+    #while statements
+    elif tree.root == "while":
+        global whiles
+
+        #check condition type 
+        #if the last child is a function
+        if len(tree.children[0].children) == 1 and tree.children[0].children[0].root == "args_statement":
+            generateCode(tree.children[0],generator)
+
+        #if the last child is a int
+        elif represents_int(tree.children[0].root):
+            generator.write("li $a0 "+str(tree.children[0].root))
+
+        #if the last child is an arithmetic operator
+        elif tree.children[0].root in compare_types:
+            findOperators(tree.children[0],generator)
+            generator.write("addiu $sp $sp 4")
+            generator.offset -= 4
+        #if it is a variable
+        else:
+            #if it is equal to a array 
+            if len(tree.children[0].children) == 1:
+                verify_array_index(tree.children[0],generator,"load")
+
+            else:
+                offset_local = str(generator.offset-generator.variables_directory[tree.children[0].root])
+                generator.write("lw $a0 "+str(offset_local)+"($sp)")
+
+        generator.write("whilestatement"+str(whiles)+":")
+        generator.write("beq $a0 $zero endwhile"+str(whiles))
+
+        loc_var = generator.memory_local_variables
+        generator.memory_local_variables = 0
+        var_directory = copy.deepcopy(generator.variables_directory)
+        parent_offset = copy.deepcopy(generator.offset)
+
+        generateCode(tree.children[1],generator)
+        
+
+        generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
+        
+        generator.write("j whilestatement"+str(whiles))
+
+        generator.variables_directory = copy.deepcopy(var_directory)
+        generator.offset = copy.deepcopy(parent_offset)
+        generator.memory_local_variables = 0
+
+        
+        generator.memory_local_variables = loc_var
+
+
+        generator.write("endwhile"+str(ifs)+":")
+
+
+        whiles += 1
+
+    #if statements
+    elif tree.root == "if":
+        global ifs 
+
+
+        #check condition type 
+        #if the last child is a function
+        if len(tree.children[0].children) == 1 and tree.children[0].children[0].root == "args_statement":
+            generateCode(tree.children[0],generator)
+
+        #if the last child is a int
+        elif represents_int(tree.children[0].root):
+            generator.write("li $a0 "+str(tree.children[0].root))
+
+        #if the last child is an arithmetic operator
+        elif tree.children[0].root in compare_types:
+            findOperators(tree.children[0],generator)
+            generator.write("addiu $sp $sp 4")
+            generator.offset -= 4
+        #if it is a variable
+        else:
+            #if it is equal to a array 
+            if len(tree.children[0].children) == 1:
+                verify_array_index(tree.children[0],generator,"load")
+
+            else:
+                offset_local = str(generator.offset-generator.variables_directory[tree.children[0].root])
+                generator.write("lw $a0 "+str(offset_local)+"($sp)")
+
+
+
+        generator.write("beq $a0 $zero elsestatement"+str(ifs))
+
+        loc_var = generator.memory_local_variables
+        generator.memory_local_variables = 0
+
+        var_directory = copy.deepcopy(generator.variables_directory)
+        parent_offset = copy.deepcopy(generator.offset)
+
+        generateCode(tree.children[1],generator)
+        
+
+        generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
+        
+
+        generator.write("j endif"+str(ifs))
+
+        generator.variables_directory = copy.deepcopy(var_directory)
+        generator.offset = copy.deepcopy(parent_offset)
+        generator.memory_local_variables = 0
+
+        generator.write("elsestatement"+str(ifs)+":")
+
+
+        if len(tree.children) >=3 and tree.children[2].root =="else":
+            
+            generateCode(tree.children[2].children[0],generator)
+
+            generator.variables_directory = copy.deepcopy(var_directory)
+            generator.offset = copy.deepcopy(parent_offset)
+            generator.memory_local_variables = 0
+            
+            generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
+        
+        generator.memory_local_variables = loc_var
+        generator.write("endif"+str(ifs)+":")
+        ifs += 1
+
     #if output is founded
     elif tree.root == "output":
         output_code(tree.children[0].children[0].children[0],generator)
+
+    elif tree.root == "input":
+        input_code(generator)
 
     #if a ["+","-","*","/","<","<=",">",">=","==","!=","="] was founded
     elif findOperators(tree,generator):
@@ -211,8 +352,6 @@ def generateCode(tree,generator):
     elif tree.root not in compare_types:
         for node in tree.children:
             generateCode(node,generator)
-            if node.root == "return":
-                break
 
 #check operators
 def findOperators(tree,generator):
@@ -297,7 +436,7 @@ def findOperators(tree,generator):
                         generator.write("sw $a0 "+str(offset_local)+"($sp)")
 
         #for arithmetic operators
-        if tree.root == "+" or tree.root == "-" or tree.root == "*" or tree.root == "/":
+        if tree.root in compare_types and tree.root != "=":
             
             #to process the children
             process_arithmetic_operator(leftChild,generator)
@@ -424,6 +563,37 @@ def choose_operation(operation,generator):
         generator.write("div $a0 $t1")  
         generator.write("mflo $a0")  
 
+    elif operation == "<":
+        generator.write("slt $a0 $a0 $t1")
+    
+    elif operation == "<=":
+        generator.write("sle $a0 $a0 $t1")
+    
+    elif operation == ">":
+        generator.write("sgt $a0 $a0 $t1")
+    
+    elif operation == ">=":
+        generator.write("sge $a0 $a0 $t1")
+    
+    elif operation == "==":
+        generator.write("seq $a0 $a0 $t1")
+
+    elif operation == "!=":
+        generator.write("sne $a0 $a0 $t1")
+
+
+#to get the input value
+def input_code(generator):
+    generator.write("li $v0 4")
+    generator.write("la $a0 inp")
+    generator.write("syscall")#print input message
+
+    generator.write("addi $v0 , $0 , 5 ")
+    generator.write("syscall")#get input
+    generator.write("move $a0 , $v0")
+
+
+
 #To print te value of a variable
 def output_code(var,generator):
     if len(var.children) == 1 and var.children[0].root != "args_statement":
@@ -469,6 +639,7 @@ def codeGen(tree,file):
         generator.write(".data")
         generator.write('newline: .asciiz "\n"')
         generator.write('outbounds: .asciiz "Variable fuera del indice: runtime error \n"')
+        generator.write('inp: .asciiz "Entrada: "')
 
         declare_glob_variables(tree,generator)
 

@@ -42,5 +42,14 @@ void main(void)
 
     p[0] = p[0] +100+ perro(p);
     output(p[0]);
-    per(jo());
+
+    per(6 < 6);
+    per(6 <= 6);
+
+    per(6 > 6);
+    per(6 >= 6);
+
+    per(6 != 6);
+    per(6 == 6);
+
 }
