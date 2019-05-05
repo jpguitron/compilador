@@ -1,10 +1,8 @@
-#estos dos van en findOperators
-#falta caso a = func()
-#falta caso a = func()+1
-#checar con funciones los =
-#poner si se iguala a parte especifica del arreglo
-#a = b[1]
-#checar output(a+i);
+#Documentacion
+#Se esta utilizando la libreria copy
+#Debe haber un return a fuerzas en el scope de la funcion si regresa int
+#Si la variable puesta excede el tamaño del arreglo manda error
+
 from declare_glob_variables import *
 import copy# poner en la documentacion que se esta utilizando
 
@@ -194,8 +192,8 @@ def generateCode(tree,generator):
                 offset_local = str(generator.offset-generator.variables_directory[tree.children[0].root])
                 generator.write("lw $a0 "+str(offset_local)+"($sp)")
 
-
         generator.write("beq $a0 $zero endwhile"+str(whiles))
+
 
         loc_var = generator.memory_local_variables
         generator.memory_local_variables = 0
@@ -207,8 +205,6 @@ def generateCode(tree,generator):
             generateCode(tree.children[1].children[1],generator)
         else:
             generateCode(tree.children[1],generator)
-
-        generateCode(tree.children[1],generator)
         
 
         generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
@@ -226,6 +222,7 @@ def generateCode(tree,generator):
 
     #if statements
     elif tree.root == "if":
+
         global ifs 
         ifs += 1
         ifs_actual = copy.deepcopy(ifs)
@@ -362,6 +359,7 @@ def generateCode(tree,generator):
     #if other character is found children of the actual node are called
     elif tree.root not in compare_types:
         for node in tree.children:
+            
             if node.root != "compound_stmt":
                 generateCode(node,generator)
             else:

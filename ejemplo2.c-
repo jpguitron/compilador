@@ -5,6 +5,14 @@ int perro(void)
     while(x<5)
     {
         int z;
+        {
+            int m;
+            m = 2012;
+            output(m);
+            return m;
+        }
+
+        
         c = input();
         if (c<=2)
         {
