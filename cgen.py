@@ -167,6 +167,8 @@ def generateCode(tree,generator):
     #while statements
     elif tree.root == "while":
         global whiles
+        
+        generator.write("whilestatement"+str(whiles)+":")
 
         #check condition type 
         #if the last child is a function
@@ -192,30 +194,32 @@ def generateCode(tree,generator):
                 offset_local = str(generator.offset-generator.variables_directory[tree.children[0].root])
                 generator.write("lw $a0 "+str(offset_local)+"($sp)")
 
-        generator.write("whilestatement"+str(whiles)+":")
+
         generator.write("beq $a0 $zero endwhile"+str(whiles))
 
         loc_var = generator.memory_local_variables
         generator.memory_local_variables = 0
         var_directory = copy.deepcopy(generator.variables_directory)
         parent_offset = copy.deepcopy(generator.offset)
+        
+        if len(tree.children[1].children) ==2:
+            generateCode(tree.children[1].children[0],generator)
+            generateCode(tree.children[1].children[1],generator)
+        else:
+            generateCode(tree.children[1],generator)
 
         generateCode(tree.children[1],generator)
         
 
         generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
-        
         generator.write("j whilestatement"+str(whiles))
 
         generator.variables_directory = copy.deepcopy(var_directory)
         generator.offset = copy.deepcopy(parent_offset)
         generator.memory_local_variables = 0
-
-        
         generator.memory_local_variables = loc_var
 
-
-        generator.write("endwhile"+str(ifs)+":")
+        generator.write("endwhile"+str(whiles)+":")
 
 
         whiles += 1
@@ -223,6 +227,8 @@ def generateCode(tree,generator):
     #if statements
     elif tree.root == "if":
         global ifs 
+        ifs += 1
+        ifs_actual = copy.deepcopy(ifs)
 
 
         #check condition type 
@@ -251,7 +257,7 @@ def generateCode(tree,generator):
 
 
 
-        generator.write("beq $a0 $zero elsestatement"+str(ifs))
+        generator.write("beq $a0 $zero elsestatement"+str(ifs_actual))
 
         loc_var = generator.memory_local_variables
         generator.memory_local_variables = 0
@@ -259,24 +265,29 @@ def generateCode(tree,generator):
         var_directory = copy.deepcopy(generator.variables_directory)
         parent_offset = copy.deepcopy(generator.offset)
 
-        generateCode(tree.children[1],generator)
-        
+        if len(tree.children[1].children) ==2:
+            generateCode(tree.children[1].children[0],generator)
+            generateCode(tree.children[1].children[1],generator)
+        else:
+            generateCode(tree.children[1],generator)
 
         generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
         
 
-        generator.write("j endif"+str(ifs))
+        generator.write("j endif"+str(ifs_actual))
 
         generator.variables_directory = copy.deepcopy(var_directory)
         generator.offset = copy.deepcopy(parent_offset)
         generator.memory_local_variables = 0
 
-        generator.write("elsestatement"+str(ifs)+":")
-
-
+        generator.write("elsestatement"+str(ifs_actual)+":")
         if len(tree.children) >=3 and tree.children[2].root =="else":
             
-            generateCode(tree.children[2].children[0],generator)
+            if len(tree.children[2].children[0].children) ==2:
+                generateCode(tree.children[2].children[0].children[0],generator)
+                generateCode(tree.children[2].children[0].children[1],generator)
+            else:
+                generateCode(tree.children[2].children[0],generator)
 
             generator.variables_directory = copy.deepcopy(var_directory)
             generator.offset = copy.deepcopy(parent_offset)
@@ -285,8 +296,8 @@ def generateCode(tree,generator):
             generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
         
         generator.memory_local_variables = loc_var
-        generator.write("endif"+str(ifs)+":")
-        ifs += 1
+        generator.write("endif"+str(ifs_actual)+":")
+        
 
     #if output is founded
     elif tree.root == "output":
@@ -351,7 +362,23 @@ def generateCode(tree,generator):
     #if other character is found children of the actual node are called
     elif tree.root not in compare_types:
         for node in tree.children:
-            generateCode(node,generator)
+            if node.root != "compound_stmt":
+                generateCode(node,generator)
+            else:
+                loc_var = generator.memory_local_variables
+                generator.memory_local_variables = 0
+                var_directory = copy.deepcopy(generator.variables_directory)
+                parent_offset = copy.deepcopy(generator.offset)
+
+                generateCode(node.children[0],generator)
+                generateCode(node.children[1],generator)
+
+                generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
+
+                generator.variables_directory = copy.deepcopy(var_directory)
+                generator.offset = copy.deepcopy(parent_offset)
+                generator.memory_local_variables = 0
+                generator.memory_local_variables = loc_var
 
 #check operators
 def findOperators(tree,generator):
