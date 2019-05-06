@@ -3,7 +3,7 @@
 #Debe haber un return a fuerzas en el scope de la funcion si regresa int
 #Si la variable puesta excede el tamaño del arreglo manda error
 
-#falta agregar variables globales
+#problema con bubblesort
 
 from declare_glob_variables import *
 import copy# poner en la documentacion que se esta utilizando
@@ -237,7 +237,6 @@ def generateCode(tree,generator):
 
         #if the last child is an arithmetic operator
         elif tree.children[0].root in compare_types:
-
             findOperators(tree.children[0],generator)
             generator.write("addiu $sp $sp 4")
             generator.offset -= 4
@@ -252,8 +251,6 @@ def generateCode(tree,generator):
             else:
                 offset_local = str(generator.offset-generator.variables_directory[tree.children[0].root])
                 generator.write("lw $a0 "+str(offset_local)+"($sp)")
-
-
 
         generator.write("beq $a0 $zero elsestatement"+str(ifs_actual))
 
@@ -388,7 +385,6 @@ def generateCode(tree,generator):
 
 #check operators
 def findOperators(tree,generator):
-
     #if the actual character is in the character list
     if tree.root in compare_types:
 
@@ -476,7 +472,6 @@ def findOperators(tree,generator):
 
         #for arithmetic operators
         if tree.root in compare_types and tree.root != "=":
-            
             #to process the children
             process_arithmetic_operator(leftChild,generator)
             process_arithmetic_operator(rightChild,generator)
@@ -510,6 +505,8 @@ def verify_array_index(child, generator, mode, value=0):
         offset_local = generator.offset - generator.variables_directory[child.root]
         generator.write("lw $t1 "+str(offset_local)+"($sp)")        
         generator.write("lw $t3 4($t1)")
+        generator.write("move $t6 $t1")
+
     else:
         if represents_int(generator.variables_directory[child.root]):
             #to get the size of the array
@@ -532,11 +529,13 @@ def verify_array_index(child, generator, mode, value=0):
             generator.write("move $t0 $a0")
         else:
             if child.children[0].root in compare_types:
+                
                 findOperators(child.children[0],generator)
                 generator.write("addiu $sp $sp 4")
                 generator.offset -= 4
 
                 generator.write("move $t0 $a0")
+                generator.write("move $t1 $t6")
 
             else:
                 offset_local = generator.offset - generator.variables_directory[child.children[0].root]
