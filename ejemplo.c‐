@@ -1,55 +1,56 @@
-int perr(int a[], int p[],int z[], int j)
-{
-    z[0] = z[0]+32;
-    return a[0]+p[0]+z[0];
-}
+int arr[5];
+void bubbleSort(int arr[],int n) 
+{ 
+   int i;
+   int j;
+   int temp;
+    j = 0;
+    i = 0;
 
-int can (int a[], int p[])
-{
-    int z[2];
-    z[0]=32;
-    return perr(a,p,z,z[0]+10);
-}
+   while(i<n-1)
+   {
+       while(j<n-i-1)
+       {
+           int q;
+           q=j+1;
+           if(arr[j]>arr[q])
+           {
 
-int perro(int a[])
-{
-    int p[2];
-    p[0] = 100;
-    return can(a,p);
-    output(p[0]+144);/*Esto no lo debe imprimir*/
+               temp = arr[j];
+               arr[j] = arr[q];
+               arr[q] = temp; 
+           }
+           j=j+1;
+       }
+       j = 0;
+       i=i+1;
+   }
 
-}
-int jo(void)
-{
-    return 7;
-}
-void per(int a)
-{
-    output(a);
-}
-void main(void)
-{
-    int k;
-    int p[2];
 
-    p[0] = 1000;
-    output(perro(p));
-    p[0] = p[0] + 79;
-    output(perro(p));
+} 
+  
+void main(void) 
+{ 
 
-    output(p[0]);
-    output(perro(p));
+    
+    int limit;
+    int start;
 
-    p[0] = p[0] +100+ perro(p);
-    output(p[0]);
+    limit = 5;
+    start = 0;
 
-    per(6 < 6);
-    per(6 <= 6);
+    while(start<limit)
+    {
+        arr[start] = input();
+        start = start+1;
+    }
 
-    per(6 > 6);
-    per(6 >= 6);
+    bubbleSort(arr,limit);
 
-    per(6 != 6);
-    per(6 == 6);
-
-}
+    start = 0;
+    while(start<limit)
+    {
+        output(arr[start]);
+        start = start+1;
+    }
+} 

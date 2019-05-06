@@ -3,6 +3,8 @@
 #Debe haber un return a fuerzas en el scope de la funcion si regresa int
 #Si la variable puesta excede el tamaño del arreglo manda error
 
+#falta agregar variables globales
+
 from declare_glob_variables import *
 import copy# poner en la documentacion que se esta utilizando
 
@@ -25,6 +27,7 @@ class Code_generator:
         self.arrays = []
         self.arrays_by_address = []
         self.parent = None
+        self.global_arrays = {}
 
     #to open the file
     def openFile(self):
@@ -46,16 +49,12 @@ def declare_functions(tree,generator):
             #copy generator for local variables
             var_directory = copy.deepcopy(generator.variables_directory)
             parent_offset = copy.deepcopy(generator.offset)
-            generator.variables_directory = copy.deepcopy(generator.glob_variables)
 
             generator.write(node.children[1].root+":")
             generator.write("move $fp $sp")
             generator.write("sw $ra 0($sp)")
             generator.write("addiu $sp $sp -4")
             
-
-
-
             #get the variables of the function
             if node.children[3].root != "void":
                 for n in reversed(node.children[3].children):
@@ -165,8 +164,10 @@ def generateCode(tree,generator):
     #while statements
     elif tree.root == "while":
         global whiles
-        
-        generator.write("whilestatement"+str(whiles)+":")
+        whiles += 1
+        whiles_actual = copy.deepcopy(whiles)
+
+        generator.write("whilestatement"+str(whiles_actual)+":")
 
         #check condition type 
         #if the last child is a function
@@ -192,7 +193,7 @@ def generateCode(tree,generator):
                 offset_local = str(generator.offset-generator.variables_directory[tree.children[0].root])
                 generator.write("lw $a0 "+str(offset_local)+"($sp)")
 
-        generator.write("beq $a0 $zero endwhile"+str(whiles))
+        generator.write("beq $a0 $zero endwhile"+str(whiles_actual))
 
 
         loc_var = generator.memory_local_variables
@@ -208,17 +209,14 @@ def generateCode(tree,generator):
         
 
         generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
-        generator.write("j whilestatement"+str(whiles))
+        generator.write("j whilestatement"+str(whiles_actual))
 
         generator.variables_directory = copy.deepcopy(var_directory)
         generator.offset = copy.deepcopy(parent_offset)
         generator.memory_local_variables = 0
         generator.memory_local_variables = loc_var
 
-        generator.write("endwhile"+str(whiles)+":")
-
-
-        whiles += 1
+        generator.write("endwhile"+str(whiles_actual)+":")
 
     #if statements
     elif tree.root == "if":
@@ -239,9 +237,12 @@ def generateCode(tree,generator):
 
         #if the last child is an arithmetic operator
         elif tree.children[0].root in compare_types:
+
             findOperators(tree.children[0],generator)
             generator.write("addiu $sp $sp 4")
             generator.offset -= 4
+
+
         #if it is a variable
         else:
             #if it is equal to a array 
@@ -269,8 +270,6 @@ def generateCode(tree,generator):
             generateCode(tree.children[1],generator)
 
         generator.write("addiu $sp $sp "+str(generator.memory_local_variables*4))
-        
-
         generator.write("j endif"+str(ifs_actual))
 
         generator.variables_directory = copy.deepcopy(var_directory)
@@ -328,7 +327,6 @@ def generateCode(tree,generator):
                 elif len(i.children) == 1:
                     verify_array_index(i,generator,"load")
 
-
                 elif i.root in generator.arrays:
                     
                     if i.root not in generator.arrays_by_address:
@@ -340,13 +338,23 @@ def generateCode(tree,generator):
                         generator.write("lw $a0 "+offset_local+("($sp)"))
                 
                 elif i.root in compare_types:
-                    generateCode(i,generator)
+                    findOperators(i,generator)
                     generator.write("addiu $sp $sp 4")
                     generator.offset -= 4
 
                 else:
-                    offset_local = str(generator.offset-generator.variables_directory[i.root])
-                    generator.write("lw $a0 "+str(offset_local)+"($sp)")
+                    if represents_int(generator.variables_directory[i.root]):
+                        #to get the size of the array
+                        offset_local = str(generator.offset-generator.variables_directory[i.root])
+                        generator.write("lw $a0 "+str(offset_local)+"($sp)")
+                    else:
+                        if generator.variables_directory[i.root] in generator.global_arrays:
+                            generator.write("la $a0 "+str(generator.variables_directory[i.root]))
+                            generator.write("addiu $a0 $a0 -4")
+                        else:
+                            generator.write("la $t4 "+str(generator.variables_directory[i.root]))
+                            generator.write("lw $a0 0($t4)")
+
 
                 generator.write("sw $a0 0($sp)")
                 generator.write("addiu $sp $sp -4")
@@ -405,12 +413,16 @@ def findOperators(tree,generator):
             elif represents_int(rightChild.root):
                 if len(leftChild.children) == 1:
                     verify_array_index(leftChild,generator,"write",rightChild.root)
-
                 else:
-                    offset_local = str(generator.offset-generator.variables_directory[leftChild.root])
-                    generator.write("li $a0 "+str(rightChild.root))
-                    generator.write("sw $a0 "+str(offset_local)+"($sp)")
-                
+                    if represents_int(generator.variables_directory[leftChild.root]):
+                        offset_local = str(generator.offset-generator.variables_directory[leftChild.root])
+                        generator.write("li $a0 "+str(rightChild.root))
+                        generator.write("sw $a0 "+str(offset_local)+"($sp)")
+                    else:
+                        generator.write("li $a0 "+str(rightChild.root))
+                        generator.write("la $a2 "+str(generator.variables_directory[leftChild.root]))
+                        generator.write("sw $a0 0($a2)")
+
             #when the rightChild is a character
             elif rightChild.root in compare_types:
                 findOperators(rightChild,generator)
@@ -447,9 +459,11 @@ def findOperators(tree,generator):
                         verify_array_index(last_child,generator,"load")
 
                     else:
-                        offset_local = str(generator.offset-generator.variables_directory[last_child.root])
-                        generator.write("lw $a0 "+str(offset_local)+"($sp)")
-            
+                        if represents_int(generator.variables_directory[last_child.root]):
+                            offset_local = str(generator.offset-generator.variables_directory[last_child.root])
+                            generator.write("lw $a0 "+str(offset_local)+"($sp)")
+                        else:
+                            generator.write("lw $a0 "+generator.variables_directory[last_child.root])
                 
                 #checar multiples == 
                 #copy the child to all previus variables
@@ -490,14 +504,22 @@ def findOperators(tree,generator):
 #check the index of the array
 def verify_array_index(child, generator, mode, value=0):
 
+    global_array = False
+
     if child.root in generator.arrays_by_address:
-        offset_local = generator.offset -generator.variables_directory[child.root]
+        offset_local = generator.offset - generator.variables_directory[child.root]
         generator.write("lw $t1 "+str(offset_local)+"($sp)")        
         generator.write("lw $t3 4($t1)")
-    else: 
-        #to get the size of the array
-        offset_local = generator.offset - (generator.variables_directory[child.root]-word_size)
-        generator.write("lw $t3 "+str(offset_local)+"($sp)")
+    else:
+        if represents_int(generator.variables_directory[child.root]):
+            #to get the size of the array
+            offset_local = generator.offset - (generator.variables_directory[child.root]-word_size)
+            generator.write("lw $t3 "+str(offset_local)+"($sp)")
+        else:
+            generator.write("la $t1 "+str(generator.variables_directory[child.root]))
+            generator.write("lw $t3 0($t1)")
+            generator.write("addiu $t1 $t1 -4")
+            global_array = True
 
 
 
@@ -509,22 +531,28 @@ def verify_array_index(child, generator, mode, value=0):
             verify_array_index(child.children[0], generator, "load")
             generator.write("move $t0 $a0")
         else:
-            offset_local = generator.offset - generator.variables_directory[child.children[0].root]
-            generator.write("lw $t0 "+str(offset_local)+"($sp)")
+            if child.children[0].root in compare_types:
+                findOperators(child.children[0],generator)
+                generator.write("addiu $sp $sp 4")
+                generator.offset -= 4
 
+                generator.write("move $t0 $a0")
 
+            else:
+                offset_local = generator.offset - generator.variables_directory[child.children[0].root]
+                generator.write("lw $t0 "+str(offset_local)+"($sp)")
 
     #check for out of bounds
     generator.write("blt $t0 $zero Outbounds")
     generator.write("bge $t0 $t3 Outbounds") 
 
-    if child.root not in generator.arrays_by_address:
+    if child.root not in generator.arrays_by_address and not global_array:
         generator.write("move $t1 $sp")                                       
         generator.write("addiu $t1 $t1 " + str(generator.offset - generator.variables_directory[child.root]))   
 
     generator.write("li $t2 4")                                            
     generator.write("mul $t0 $t0 $t2")                                    
-    generator.write("sub $t1 $t1 $t0")                                    
+    generator.write("sub $t1 $t1 $t0")                           
 
     if mode == "write":
         if represents_int(value):
@@ -534,7 +562,7 @@ def verify_array_index(child, generator, mode, value=0):
             generator.write("lw $a0 "+str(offset_local)+"($sp)")  
         generator.write("sw $a0 0($t1)")
 
-    elif mode == "load": 
+    elif mode == "load":
         generator.write("lw $a0 0($t1)")
 
     elif mode == "save":
@@ -543,7 +571,6 @@ def verify_array_index(child, generator, mode, value=0):
 
 #process child for arithmetic operators
 def process_arithmetic_operator(child,generator):
-
     #if is a function
     if len(child.children) == 1 and child.children[0].root == "args_statement":
         generateCode(child,generator)
@@ -566,13 +593,19 @@ def process_arithmetic_operator(child,generator):
     else:
         if len(child.children) == 1:
             verify_array_index(child,generator,"load")
+
         else:
-            offset_local = str(generator.offset-generator.variables_directory[child.root])
-            generator.write("lw $a0 "+str(offset_local)+"($sp)")
+            if represents_int(generator.variables_directory[child.root]):
+                offset_local = str(generator.offset-generator.variables_directory[child.root])
+                generator.write("lw $a0 "+str(offset_local)+"($sp)")
+            else:
+                generator.write("lw $a0 "+generator.variables_directory[child.root])
 
         generator.write("sw $a0, 0($sp)")
         generator.write("addiu $sp $sp -4")
         generator.offset += 4
+
+
 
 def choose_operation(operation,generator):
     if operation == "+":
@@ -635,8 +668,12 @@ def output_code(var,generator):
         generator.write("addiu $sp $sp 4")
         generator.offset -= 4
     else:
-        offset_local = str(generator.offset-generator.variables_directory[var.root])
-        generator.write("lw $a0 "+str(offset_local)+"($sp)")
+
+        if represents_int(generator.variables_directory[var.root]):
+            offset_local = str(generator.offset-generator.variables_directory[var.root])
+            generator.write("lw $a0 "+str(offset_local)+"($sp)")
+        else:
+            generator.write("lw $a0 "+str(generator.variables_directory[var.root]))
 
     generator.write("li $v0 1")
     generator.write("syscall")
@@ -674,6 +711,13 @@ def codeGen(tree,file):
         declare_functions(tree,generator)
 
         generator.write("main:")
+
+        for key, value in generator.global_arrays.items():
+            generator.write("la $a0 "+str(key))
+            generator.write("li $t0, "+str(value))
+            generator.write("sw $t0 0($a0)")
+        
+
         generator.parent = "main"
         for nod in tree.children[len(tree.children)-1].children:
             #Generate the code for local_declarations and statement_list 

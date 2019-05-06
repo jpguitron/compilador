@@ -1,0 +1,33 @@
+int perr(int a[], int p[],int z[], int j)
+{
+    output(j);
+    z[0] = z[0]+32;
+    return a[0]+p[0]+z[0];
+}
+
+int can (int a[], int p[])
+{
+    int z[2];
+    z[0]=32;
+    return perr(a,p,z,z[0]+10);
+}
+
+int perro(int a[])
+{
+    int p[2];
+    p[0] = 100;
+    return can(a,p);
+    output(p[0]+144);/*Esto no lo debe imprimir*/
+
+}
+void main(void)
+{
+    int k;
+    int p[2];
+
+    p[0] = 1000;
+    output(perro(p));
+    p[0] = p[0] + 79;
+
+    output(perro(p));
+}
