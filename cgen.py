@@ -3,6 +3,7 @@
 #Debe haber un return a fuerzas en el scope de la funcion si regresa int
 #Si la variable puesta excede el tamaño del arreglo manda error
 
+#checar comentario lexer
 #problema con bubblesort
 
 from declare_glob_variables import *

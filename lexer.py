@@ -76,7 +76,6 @@ def t_COMMENT(t):
 #Para poder detectar los numeros
 def t_NUM(t):
     r'\d+'
-    #r'\d+(?![0-9a-zA-Z])'
     t.value = int(t.value)
     return t
     
