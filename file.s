@@ -326,12 +326,6 @@ sw $a0 4($sp)
 addiu $sp $sp 0
 j whilestatement2
 endwhile2:
-li $a0 69
-li $v0 1
-syscall
-li $v0 4
-la $a0 newline
-syscall
 sw $fp 0($sp)
 addiu $sp $sp -4
 li $a0 10

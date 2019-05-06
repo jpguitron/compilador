@@ -50,7 +50,6 @@ void main(void)
         x[i] = input();
         i = i + 1;
     }
-    output(69);
     sort(x,0,10);
     
     i = 0;
