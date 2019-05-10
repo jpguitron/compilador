@@ -429,8 +429,12 @@ def findOperators(tree,generator):
                 if len(leftChild.children) == 1:
                     verify_array_index(leftChild,generator,"save")
                 else:
-                    offset_local = str(generator.offset-generator.variables_directory[leftChild.root])
-                    generator.write("sw $a0 "+str(offset_local)+"($sp)")
+                    if represents_int(generator.variables_directory[leftChild.root]):
+                        offset_local = str(generator.offset-generator.variables_directory[leftChild.root])
+                        generator.write("sw $a0 "+str(offset_local)+"($sp)")
+                    else:
+                        generator.write("sw $a0 "+generator.variables_directory[leftChild.root])
+
 
             #when is equal to another variable
             else: 

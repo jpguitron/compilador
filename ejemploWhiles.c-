@@ -1,0 +1,11 @@
+int a;
+void main(void)
+{
+    
+    a = 0;
+    while(a<5)
+    {
+        output(a);
+        a = a+1;
+    }
+}
